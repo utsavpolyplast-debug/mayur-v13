@@ -489,15 +489,23 @@ async function cycleAtt(empId, day, shift, currentStatus, m, y){
 
   const date=ds(y,m,day);
 
+  // Update local data immediately for instant UI response
+  const idx=attData.findIndex(r=>r.emp_id===empId&&parseInt(r.att_date.split('-')[2])===day);
+
   if(sat&&next==='H'){
+    // Remove record
+    if(idx>=0) attData.splice(idx,1);
     await sb.from('attendance').delete().eq('emp_id',empId).eq('att_date',date).eq('shift',shift);
   } else if(!next){
+    if(idx>=0) attData.splice(idx,1);
     await sb.from('attendance').delete().eq('emp_id',empId).eq('att_date',date).eq('shift',shift);
   } else {
-    await sb.from('attendance').upsert({emp_id:empId,att_date:date,shift,status:next,ot_hours:0,hours:12},{onConflict:'emp_id,att_date,shift'});
+    const newRec={emp_id:empId,att_date:date,shift,status:next,ot_hours:0,hours:12};
+    if(idx>=0) attData[idx]={...attData[idx],...newRec};
+    else attData.push(newRec);
+    await sb.from('attendance').upsert({...newRec},{onConflict:'emp_id,att_date,shift'});
   }
-  // Always reload fresh from Supabase after save
-  await loadAtt();
+  renderAtt(m,y,shift);
 }
 
 async function saveField(empId, day, shift, field, value, m, y){
