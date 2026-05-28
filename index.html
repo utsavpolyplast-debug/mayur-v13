@@ -662,7 +662,7 @@ async function cycleAtt(empId,day,shift,currentStatus,m,y){
   } else {
     await sb.from('attendance').upsert({emp_id:empId,att_date:date,shift,status:next,ot_hours:0,hours:12},{onConflict:'emp_id,att_date,shift'});
   }
-  await loadAtt();
+renderAtt(m,y,shift);
 }
 
 async function saveField(empId,day,shift,field,value,m,y){
