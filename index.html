@@ -674,7 +674,10 @@ async function saveField(empId,day,shift,field,value,m,y){
 async function loadSal(){
   const m=parseInt(document.getElementById('sal-month').value);
   const y=2026;
-  document.getElementById('sallist').innerHTML='<div class="spinner">Loading...</div>';
+  function filterSal(){
+  clearTimeout(window._salTimer);
+  window._salTimer=setTimeout(loadSal,400);
+}
   const start=ds(y,m,1), end=ds(y,m,getDays(y,m));
   const att=await fetchAll(sb.from('attendance').select('*').gte('att_date',start).lte('att_date',end));
   const [{data:adv},{data:rick}]=await Promise.all([
